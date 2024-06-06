@@ -7,16 +7,16 @@ namespace BulkyWeb.Controllers;
 
 public class CategoryController : Controller
 {
-    private readonly ICategoryRepository _categoryRepo;
-    public CategoryController(ICategoryRepository db)
+    private readonly IUnitOfWork _unitOfWork;
+    public CategoryController(IUnitOfWork unitOfWork)
     {
-        _categoryRepo = db;
+        _unitOfWork = unitOfWork;
     }
     
     public IActionResult Index()
     {
-        List<Category> objCategoryList = _categoryRepo.GetAll().ToList();
-        //var objCategoryList = _categoryRepo.Categories.ToList();
+        List<Category> objCategoryList = _unitOfWork.Category.GetAll().ToList();
+        //var objCategoryList = _unitOfWork.Category.Categories.ToList();
         return View(objCategoryList);
     }
 
@@ -40,8 +40,8 @@ public class CategoryController : Controller
         */
         if (ModelState.IsValid)
         {
-            _categoryRepo.Add(obj);
-            _categoryRepo.Save();
+            _unitOfWork.Category.Add(obj);
+            _unitOfWork.Save();
             TempData["success"] = "Category created successfully!";
             return RedirectToAction("Index");
         }
@@ -56,7 +56,7 @@ public class CategoryController : Controller
             return NotFound();
         }
 
-        Category categoryFromDb = _categoryRepo.Get(u=>u.CategoryId == id);
+        Category categoryFromDb = _unitOfWork.Category.Get(u=>u.CategoryId == id);
         if (categoryFromDb == null)
         {
             return NotFound();
@@ -70,8 +70,8 @@ public class CategoryController : Controller
         
         if (ModelState.IsValid)
         {
-            _categoryRepo.Update(obj);
-            _categoryRepo.Save();
+            _unitOfWork.Category.Update(obj);
+            _unitOfWork.Save();
             TempData["success"] = "Category edited successfully!";
             return RedirectToAction("Index");
         }
@@ -83,14 +83,14 @@ public class CategoryController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult DeleteConfirmed(int? id)
     {
-        Category? obj = _categoryRepo.Get(u=>u.CategoryId == id);
+        Category? obj = _unitOfWork.Category.Get(u=>u.CategoryId == id);
         if (obj == null)
         {
             return NotFound();
         }
 
-        _categoryRepo.Remove(obj);
-        _categoryRepo.Save();
+        _unitOfWork.Category.Remove(obj);
+        _unitOfWork.Save();
         return RedirectToAction(nameof(Index));
         
     }
