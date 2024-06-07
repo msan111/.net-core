@@ -3,8 +3,9 @@ using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BulkyWeb.Controllers;
+namespace BulkyWeb.Areas.Admin.Controllers;
 
+[Area("Admin")]
 public class CategoryController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -56,7 +57,7 @@ public class CategoryController : Controller
             return NotFound();
         }
 
-        Category categoryFromDb = _unitOfWork.Category.Get(u=>u.CategoryId == id);
+        Category categoryFromDb = _unitOfWork.Category.Get(u=>u.Id == id);
         if (categoryFromDb == null)
         {
             return NotFound();
@@ -83,7 +84,7 @@ public class CategoryController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult DeleteConfirmed(int? id)
     {
-        Category? obj = _unitOfWork.Category.Get(u=>u.CategoryId == id);
+        Category? obj = _unitOfWork.Category.Get(u=>u.Id == id);
         if (obj == null)
         {
             return NotFound();
