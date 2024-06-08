@@ -1,6 +1,7 @@
 using Bulky.DataAccess.Data;
 using Bulky.DataAccess.Repository.IRepository;
 using Bulky.Models;
+using Bulky.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -24,28 +25,41 @@ public class ProductController : Controller
 
     public IActionResult Create()
     {
-        IEnumerable<SelectListItem> CategoryList = _unitOfWork.Category
-            .GetAll().Select(u => new SelectListItem
-            {
-                Text = u.Name,
-                Value = u.Id.ToString()
-            });
-        ViewBag.CategoryList = CategoryList;
-        return View();
+        ProductVM productVm = new()
+        {
+            CategoryList = _unitOfWork.Category
+                .GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                }),
+             Product = new Product()
+        };
+        return View(productVm);
     }
     [HttpPost]
-    public IActionResult Create(Product obj)
+    public IActionResult Create(ProductVM productVM)
     {
         
         if (ModelState.IsValid)
         {
-            _unitOfWork.Product.Add(obj);
+            _unitOfWork.Product.Add(productVM.Product);
             _unitOfWork.Save();
             TempData["success"] = "Product created successfully!";
             return RedirectToAction("Index");
         }
-
-        return View();
+        else
+        {
+            //populate the dropdown again
+            productVM.CategoryList = _unitOfWork.Category
+                .GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                });
+            return View(productVM);
+        }
+       
     }
     
     public IActionResult Edit(int? id)
