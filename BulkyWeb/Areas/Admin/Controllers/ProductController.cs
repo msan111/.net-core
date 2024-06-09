@@ -11,9 +11,11 @@ namespace BulkyWeb.Areas.Admin.Controllers;
 public class ProductController : Controller
 {
     private readonly IUnitOfWork _unitOfWork;
-    public ProductController(IUnitOfWork unitOfWork)
+    private readonly IWebHostEnvironment _webHostEnvironment;
+    public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
     {
         _unitOfWork = unitOfWork;
+        _webHostEnvironment = webHostEnvironment;
     }
     
     public IActionResult Index()
@@ -38,11 +40,24 @@ public class ProductController : Controller
         return View(productVm);
     }
     [HttpPost]
-    public IActionResult Create(ProductVM productVM)
+    public IActionResult Create(ProductVM productVM, IFormFile? file)
     {
         
         if (ModelState.IsValid)
         {
+            string wwwRootPath = _webHostEnvironment.WebRootPath;
+            if (file != null)
+            {
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                string productPath = Path.Combine(wwwRootPath, @"images/product");
+
+                using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+                {
+                    file.CopyTo(fileStream);    
+                }
+                //saving imageUrl to Product ImageURl
+                productVM.Product.ImageUrl = @"/images/product/" + fileName;
+            }
             _unitOfWork.Product.Add(productVM.Product);
             _unitOfWork.Save();
             TempData["success"] = "Product created successfully!";
@@ -68,28 +83,76 @@ public class ProductController : Controller
         {
             return NotFound();
         }
+        
+        ProductVM productVm = new()
+        {
+            CategoryList = _unitOfWork.Category
+                .GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                }),
+            Product = new Product()
+        };
 
-        Product productFromDb = _unitOfWork.Product.Get(u=>u.Id == id);
-        if (productFromDb == null)
+        productVm.Product = _unitOfWork.Product.Get(u=>u.Id == id);
+        if (productVm.Product == null)
         {
             return NotFound();
         }
-        return View(productFromDb);
+        return View(productVm);
     }
 
     [HttpPost]
-    public IActionResult Edit(Product obj)
+    public IActionResult Edit(ProductVM productVM, IFormFile? file)
     {
         
         if (ModelState.IsValid)
         {
-            _unitOfWork.Product.Update(obj);
+            string wwwRootPath = _webHostEnvironment.WebRootPath;
+            if (file != null)
+            {
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                string productPath = Path.Combine(wwwRootPath, @"images/product");
+                
+               
+                //if there is already an image
+                if (!string.IsNullOrEmpty(productVM.Product.ImageUrl))
+                {
+                    //delete the old image
+                    var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                      //  /images/product/7ad613ed-d9d8-41e2-8553-f7ed0073c6fc.png
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+                
+                using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))
+                {
+                    file.CopyTo(fileStream);    
+                }
+                productVM.Product.ImageUrl = @"/images/product/" + fileName;
+
+            }
+            
+
+            _unitOfWork.Product.Update(productVM.Product);
             _unitOfWork.Save();
             TempData["success"] = "Product edited successfully!";
             return RedirectToAction("Index");
         }
-
-        return View();
+        else
+        {
+            //populate the dropdown again
+            productVM.CategoryList = _unitOfWork.Category
+                .GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                });
+            return View(productVM);
+        }
     }
     
     public IActionResult Delete(int? id)
