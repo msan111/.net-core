@@ -81,8 +81,7 @@ public class CategoryController : Controller
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult DeleteConfirmed(int? id)
+    public IActionResult DeleteConfirmed(int id)
     {
         Category? obj = _unitOfWork.Category.Get(u=>u.Id == id);
         if (obj == null)
