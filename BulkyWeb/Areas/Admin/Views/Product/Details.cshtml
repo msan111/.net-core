@@ -1,0 +1,103 @@
+@model ProductVM
+
+<div class="card shadow border-0 my-5">
+    <div class="card-header bg-secondary bg-gradient py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">Details</h2>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <form method="post" asp-action="Delete" asp-controller="Product" asp-route-id="@Model.Product.Id" class="row">
+            <input asp-for="Product.Id" hidden/>
+            <input asp-for="Product.ImageUrl" hidden/>
+            <div class="border p-3">
+                <div class="col-12">
+                    <div class="row justify-content-center">
+                        <div class="col-10 pt-3 ms-2">
+                            <h4>General Information</h4>
+                        </div>
+                        <div class="form-floating py-3 col-10">
+                            <input asp-for="Product.Title" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.Title" class="ms-2"></label>
+                        </div>
+                        <div class="py-3 col-10">
+                            <label asp-for="Product.Description" class="ms-2 text-muted"></label>
+                            <textarea asp-for="Product.Description"   class="form-control border-0 shadow" readonly onfocus="this.blur()" ></textarea>
+                        </div>
+                        <div class="form-floating py-3 col-10">
+                            <input asp-for="Product.ISBN" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.ISBN" class="ms-2"></label>
+                        </div>
+                        <div class="form-floating py-3 col-10">
+                            <input asp-for="Product.Author" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.Author" class="ms-2"></label>
+                        </div>
+                        <div class="form-floating py-3 col-10">
+                            <input type="text" asp-for="Product.Category.Name" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.Category.Name" class="ms-2"></label>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row justify-content-center pt-3">
+                    <div class="col-5">
+                        <h4 class="ms-2">Pricing</h4>
+                        <div class="form-floating py-3">
+                            <input asp-for="Product.ListPrice" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.ListPrice" class="ms-2"></label>
+                        </div>
+                        <div class="form-floating py-3">
+                            <input asp-for="Product.Price" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.Price" class="ms-2"></label>
+                        </div>
+                        <div class="form-floating py-3">
+                            <input asp-for="Product.Price50" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.Price50" class="ms-2"></label>
+                        </div>
+                        <div class="form-floating py-3">
+                            <input asp-for="Product.Price100" class="form-control border-0 shadow" readonly/>
+                            <label asp-for="Product.Price100" class="ms-2"></label>
+                        </div>
+                    </div>
+                    <div class="col-5 ">
+                        <h4 class="ms-2">Product Media</h4>
+                        <div class="form-floating py-3">
+                            <img src="@Model.Product.ImageUrl" class="img-thumbnail" style="max-width: 100%; height: auto; max-height: 250px;" alt="Product Image"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center pt-3">
+                    <div class="col-5">
+                        <button type="submit" class="btn btn-danger form-control">
+                            <i class="bi bi-trash3"></i> Delete
+                        </button>
+                    </div>
+                    <div class="col-5">
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-secondary form-control">Back to List</a>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+@section Scripts
+{
+<script>
+    tinymce.init({
+        selector: 'textarea',
+        plugins: 'autolink lists link charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        menubar: false,
+        branding: false,
+        height: 300
+    });
+</script>
+@{
+<partial name="_ValidationScriptsPartial"/>
+}
+}

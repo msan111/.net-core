@@ -155,6 +155,33 @@ public class ProductController : Controller
         }
     }
     
+    public IActionResult Details(int? id)
+    {
+        if (id == null || id == 0)
+        {
+            return NotFound();
+        }
+
+        ProductVM productVm = new()
+        {
+            CategoryList = _unitOfWork.Category
+                .GetAll().Select(u => new SelectListItem
+                {
+                    Text = u.Name,
+                    Value = u.Id.ToString()
+                }),
+            Product = new Product()
+        };
+
+        productVm.Product = _unitOfWork.Product.Get(u=>u.Id == id);
+        if (productVm.Product == null)
+        {
+            return NotFound();
+        }
+        return View(productVm);
+    }
+
+    [HttpPost]
     public IActionResult Delete(int? id)
     {
         if (id == null || id == 0)
@@ -162,21 +189,16 @@ public class ProductController : Controller
             return NotFound();
         }
 
-        Product productFromDb = _unitOfWork.Product.Get(u=>u.Id == id);
-        if (productFromDb == null)
-        {
-            return NotFound();
-        }
-        return View(productFromDb);
-    }
-
-    [HttpPost , ActionName("Delete")]
-    public IActionResult DeletePOST(int? id)
-    {
-        Product? obj = _unitOfWork.Product.Get(u=>u.Id == id);
+        Product obj = _unitOfWork.Product.Get(u=>u.Id == id);
         if (obj == null)
         {
             return NotFound();
+        }
+        
+        var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, obj.ImageUrl.TrimStart('/'));
+        if (System.IO.File.Exists(oldImagePath))
+        {
+            System.IO.File.Delete(oldImagePath);
         }
 
         _unitOfWork.Product.Remove(obj);
@@ -185,4 +207,20 @@ public class ProductController : Controller
         return RedirectToAction("Index");
         
     }
+
+    //Create an API that will provide data to be used with DataTables
+    #region API CALLS
+
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        List<Product> objProductList = _unitOfWork.Product.GetAll(includeProperties:"Category").ToList();
+        return Json(new { data = objProductList });
+
+    }
+    
+    
+    
+
+    #endregion
 }
